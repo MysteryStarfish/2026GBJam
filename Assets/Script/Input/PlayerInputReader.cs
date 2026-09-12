@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 public class PlayerInputReader : ScriptableObject, InputSystem_Actions.IPlayerActions
 {
     public Action<Vector2> OnMove;
+    public Action OnAttack;
     private InputSystem_Actions _inputActions;
     
     private void OnEnable()
@@ -24,7 +25,7 @@ public class PlayerInputReader : ScriptableObject, InputSystem_Actions.IPlayerAc
     }
     public void OnA(InputAction.CallbackContext context)
     {
-        throw new System.NotImplementedException();
+        if (context.performed) OnAttack?.Invoke();
     }
 
     public void OnB(InputAction.CallbackContext context)
