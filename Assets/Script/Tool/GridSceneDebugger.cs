@@ -8,6 +8,7 @@ public class GridSceneDebugger : MonoBehaviour
     [SerializeField] private Board board;
     [SerializeField] private Player player;
     [SerializeField] private GameObject enemyPrefab;
+    [SerializeField] private PlayerInputReader playerInputReader;
 
     public Vector2Int targetCellPos;
     public Vector2Int spawnEnemyCellPos;
@@ -15,4 +16,5 @@ public class GridSceneDebugger : MonoBehaviour
     public Board Board => board;
     public Player Player => player;
     public GameObject EnemyPrefab => enemyPrefab;
+    public PlayerInputReader PlayerInputReader => playerInputReader;
 }

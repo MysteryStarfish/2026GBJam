@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,7 +7,7 @@ using UnityEngine.InputSystem;
 public class PlayerInputReader : ScriptableObject, InputSystem_Actions.IPlayerActions
 {
     public Action<Vector2> OnMove;
-    public Action OnAttack;
+    public Action<BulletType> OnAttack;
     private InputSystem_Actions _inputActions;
     
     private void OnEnable()
@@ -25,12 +26,12 @@ public class PlayerInputReader : ScriptableObject, InputSystem_Actions.IPlayerAc
     }
     public void OnA(InputAction.CallbackContext context)
     {
-        if (context.performed) OnAttack?.Invoke();
+        if (context.performed) OnAttack?.Invoke(BulletType.A);
     }
 
     public void OnB(InputAction.CallbackContext context)
     {
-        throw new System.NotImplementedException();
+        if (context.performed) OnAttack?.Invoke(BulletType.B);
     }
 
     public void OnUp(InputAction.CallbackContext context)
