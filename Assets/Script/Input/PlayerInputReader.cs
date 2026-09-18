@@ -8,6 +8,7 @@ public class PlayerInputReader : ScriptableObject, InputSystem_Actions.IPlayerAc
 {
     public Action<Vector2> OnMove;
     public Action<BulletType> OnAttack;
+    public Action OnTest;
     private InputSystem_Actions _inputActions;
     
     private void OnEnable()
@@ -36,12 +37,12 @@ public class PlayerInputReader : ScriptableObject, InputSystem_Actions.IPlayerAc
 
     public void OnUp(InputAction.CallbackContext context)
     {
-        if (context.performed) OnMove?.Invoke(Vector2.down);
+        if (context.performed) OnMove?.Invoke(Vector2.up);
     }
 
     public void OnDown(InputAction.CallbackContext context)
     {
-        if (context.performed) OnMove?.Invoke(Vector2.up);
+        if (context.performed) OnMove?.Invoke(Vector2.down);
     }
 
     public void OnLeft(InputAction.CallbackContext context)
@@ -52,5 +53,10 @@ public class PlayerInputReader : ScriptableObject, InputSystem_Actions.IPlayerAc
     public void OnRight(InputAction.CallbackContext context)
     {
         if (context.performed) OnMove?.Invoke(Vector2.right);
+    }
+
+    public void OnTestButton(InputAction.CallbackContext context)
+    {
+        if (context.performed) OnTest?.Invoke();
     }
 }

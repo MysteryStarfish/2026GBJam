@@ -2,9 +2,9 @@
 using Script.Line;
 using UnityEngine;
 
-namespace Script.Player
+namespace Script.OnBoard.Player
 {
-    public class Player : MonoBehaviour, LaserHitable, IOnBoardable
+    public class Player : OnBoardEntity, LaserHitable
     {
         [SerializeField] private int initialHp;
         [SerializeField] PlayerInputReader playerInputReader;
@@ -37,8 +37,8 @@ namespace Script.Player
             {
                 Hp = initialHp
             };
-            board.InitEntityPosition(this, startCellPosition);
-            transform.position = board.CellToWorldPosition(board.GetEntityPosition(this));
+            board.PlaceEntity(this, startCellPosition);
+            transform.position = board.CellToWorldPosition(board.GetEntityPosition(this), Size);
         }
         
         void OnEnable()
@@ -55,7 +55,7 @@ namespace Script.Player
         {
             Vector2Int targetPos = board.GetEntityPosition(this) + Vector2Int.RoundToInt(direction);
             board.TryMove(this, targetPos);
-            transform.position = board.CellToWorldPosition(board.GetEntityPosition(this));
+            transform.position = board.CellToWorldPosition(board.GetEntityPosition(this), Size);
         }
 
         public void OnHit()
@@ -103,13 +103,15 @@ namespace Script.Player
             }
             IsInvincible = false;
         }
-        
-        public EntityType GetEntityType()
+
+        public override Vector2Int Size => Vector2Int.one;
+
+        public override EntityType GetEntityType()
         {
             return EntityType.Player;
         }
 
-        public void OnOverlapWith(Vector2Int originPos, Vector2Int targetPos, IOnBoardable other)
+        public override bool OnOverlapWith(Vector2Int originPos, Vector2Int targetPos, OnBoardEntity other)
         {
             if (other.GetEntityType() == EntityType.Enemy)
             {
@@ -119,6 +121,15 @@ namespace Script.Player
                     OnHit();
                 }
             }
+
+            if (other.GetEntityType() == EntityType.Obstacle)
+            {
+                if (other is Obstacle { IsTrigger: false })
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

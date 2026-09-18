@@ -247,7 +247,7 @@ SpriteRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 4c4d658d77a213d4ab9b436294991b2e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: accf9d8bc7a96744eac4a709c5abcdcc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -730,6 +730,7 @@ MonoBehaviour:
   playerInputReader: {fileID: 11400000, guid: f50c68563e8add543901792e5f452c62, type: 2}
   targetCellPos: {x: 1, y: 4}
   spawnEnemyCellPos: {x: 0, y: 0}
+  enemySize: {x: 0, y: 0}
 --- !u!1 &1405011118
 GameObject:
   m_ObjectHideFlags: 0
@@ -1036,11 +1037,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Line
   playerInputReader: {fileID: 11400000, guid: f50c68563e8add543901792e5f452c62, type: 2}
-  playerPlayerDetector: {fileID: 1427141672}
+  playerDetector: {fileID: 0}
   startPos: {x: -5, y: 0}
   moveDistance: 10
   moveSpeed: 5
   moveHorizontally: 1
+  isCanvaMove: 0
 --- !u!1 &1719395205
 GameObject:
   m_ObjectHideFlags: 0
@@ -1256,9 +1258,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8a65a264f228164e8f49b6b1612b9f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Board
-  row: 10
-  col: 9
   cellSize: 1
+  worldOrigin: {x: 0, y: 0, z: 0}
 --- !u!1001 &1688562403266586869
 PrefabInstance:
   m_ObjectHideFlags: 0

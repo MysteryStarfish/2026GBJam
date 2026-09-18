@@ -1,39 +1,49 @@
-﻿using DG.Tweening;
+﻿using System;
+using DG.Tweening;
 using Script.Line;
 using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Script.Enemy
 {
-    public class Enemy : MonoBehaviour, LaserHitable, IOnBoardable
+    public class Enemy : OnBoardEntity, LaserHitable
     {
         private IEnemyMovement _enemyMovement;
         [SerializeField] private Board board;
-        [SerializeField] private int forwardGrids;
-        [SerializeField] private int backwardGrids; 
-        private int moveGrids => forwardGrids + backwardGrids + 1;
+        private int moveGrids => moveInfo.moveDistance;
         private bool isFirstMove = true;
-        [SerializeField] private Vector2Int initPosition;
-        [SerializeField] private Vector2Int size;
-        [SerializeField] private Vector2Int direction;
-        [SerializeField] private float stepInterval;
+        [SerializeField] private MoveInfo moveInfo;
         [SerializeField] private EnemyState state;
         private Tween moveTween;
+        public event Action EnemyDeadEvent;
+        private bool isDead = false;
+
+        [System.Serializable]
+        public struct MoveInfo
+        {
+            public Vector2Int initPosition;
+            public Vector2Int size;
+            public Vector2Int direction;
+            public int firstMoveDistance;
+            public int moveDistance;
+            public float stepInterval;
+        }
         
         [System.Serializable]
-        struct EnemyState
+        public struct EnemyState
         {
             public int Hp;
             public int Atk;
             public int CurrentMoveGrids;
         }
 
-        void Start()
+        public void Init(Board board, MoveInfo moveInfo, EnemyState state)
         {
-            board.InitEntityPosition(this, initPosition, size);
-            transform.position = board.CellToWorldPosition(initPosition);
-
-            moveTween = DOVirtual.DelayedCall(stepInterval, Move)
+            this.board = board;
+            this.moveInfo = moveInfo;
+            this.state = state;
+            
+            moveTween = DOVirtual.DelayedCall(moveInfo.stepInterval, Move)
                 .SetLoops(-1, LoopType.Restart);
         }
         private void OnDestroy()
@@ -52,34 +62,53 @@ namespace Script.Enemy
 
         private void OnDead()
         {
+            if (isDead) return;
+            EnemyDeadEvent?.Invoke();
+            isDead = true;
+            
             moveTween?.Kill();
             
             board.RemoveEntity(this);
             Destroy(gameObject);
         }
 
+        public void Dead()
+        {
+            OnDead();
+        }
+
         private void Move()
         {
             var pos = board.GetEntityPosition(this);
-            board.TryMove(this, pos + direction);
-            transform.position = board.CellToWorldPosition(board.GetEntityPosition(this));
+            board.TryMove(this, pos + moveInfo.direction);
+            transform.position = board.CellToWorldPosition(board.GetEntityPosition(this), Size);
             state.CurrentMoveGrids += 1;
-            if ((isFirstMove && state.CurrentMoveGrids > forwardGrids) || (!isFirstMove && state.CurrentMoveGrids >= moveGrids))
+            if ((isFirstMove && state.CurrentMoveGrids > moveInfo.firstMoveDistance) || (!isFirstMove && state.CurrentMoveGrids >= moveGrids))
             {
                 state.CurrentMoveGrids = 0;
-                direction = -direction;
+                moveInfo.direction = -moveInfo.direction;;
                 isFirstMove = false;
             }
         }
 
-        public EntityType GetEntityType()
+        public override Vector2Int Size => moveInfo.size;
+
+        public override EntityType GetEntityType()
         {
             return EntityType.Enemy;
         }
 
-        public void OnOverlapWith(Vector2Int originPos, Vector2Int targetPos, IOnBoardable other)
+        public override bool OnOverlapWith(Vector2Int originPos, Vector2Int targetPos, OnBoardEntity other)
         {
-            board.ForceMove(this, targetPos);
+            if (other.GetEntityType() == EntityType.Obstacle)
+            {
+                moveInfo.direction = -moveInfo.direction;
+                state.CurrentMoveGrids = 0;
+                Move();
+                return false;
+            }
+
+            return true;
         }
     }
 

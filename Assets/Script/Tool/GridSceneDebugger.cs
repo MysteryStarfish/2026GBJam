@@ -1,4 +1,4 @@
-using Script.Player;
+using Script.OnBoard.Player;
 using UnityEngine;
 
 // 掛在場景任意 Debug 物件上
@@ -12,6 +12,7 @@ public class GridSceneDebugger : MonoBehaviour
 
     public Vector2Int targetCellPos;
     public Vector2Int spawnEnemyCellPos;
+    public Vector2Int enemySize;
 
     public Board Board => board;
     public Player Player => player;

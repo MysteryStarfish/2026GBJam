@@ -10,7 +10,7 @@ namespace Script.Line
         [SerializeField] private Vector2 boxSize;
         [SerializeField] private Transform checkPoint;
         [SerializeField] private ContactFilter2D lazerFilter;
-        public bool IsDetected { get; private set; }
+        private bool IsDetected { get; set; }
         private bool wasDetected;
         
         private readonly List<Collider2D> hitResults = new List<Collider2D>(10);

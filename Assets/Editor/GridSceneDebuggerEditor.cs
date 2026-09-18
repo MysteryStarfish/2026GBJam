@@ -19,7 +19,7 @@ public class GridSceneDebuggerEditor : Editor
             if (debugger.Player)
             {
                 Undo.RecordObject(debugger.Player.transform, "Move Player");
-                debugger.Player.transform.position = debugger.Board.CellToWorldPosition(debugger.targetCellPos);
+                debugger.Player.transform.position = debugger.Board.CellToWorldPosition(debugger.targetCellPos, Vector2Int.one);
             }
         }
 
@@ -27,7 +27,7 @@ public class GridSceneDebuggerEditor : Editor
         {
             if (debugger.EnemyPrefab)
             {
-                Vector3 worldPos = debugger.Board.CellToWorldPosition(debugger.spawnEnemyCellPos);
+                Vector3 worldPos = debugger.Board.CellToWorldPosition(debugger.spawnEnemyCellPos, debugger.enemySize);
                 GameObject spawned = (GameObject)PrefabUtility.InstantiatePrefab(debugger.EnemyPrefab);
                 spawned.transform.position = worldPos;
                 Undo.RegisterCreatedObjectUndo(spawned, "Spawn Enemy");

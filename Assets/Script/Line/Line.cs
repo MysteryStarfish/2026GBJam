@@ -1,14 +1,18 @@
-using System;
-using System.Collections.Generic;
+using NUnit.Framework.Internal;
 using Script.Line;
+using Script.OnBoard.Player;
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class Line : MonoBehaviour
 {
     [SerializeField] private PlayerInputReader playerInputReader;
     [SerializeField] private PlayerDetector playerDetector;
-    [SerializeField] private BulletSlot bulletSlot;
+    [SerializeField] private Player player;
+    [SerializeField] private BulletSlotShower bulletSlotShower;
+    
+    [SerializeField] private int bulletCount = 6;
+    private BulletSlot bulletSlot;
     
     [SerializeField] private Vector2 startPos;
     [SerializeField] private float moveDistance;
@@ -21,52 +25,63 @@ public class Line : MonoBehaviour
     private void Start()
     {
         if (isCanvaMove) rectTransform = GetComponent<RectTransform>();
+        bulletSlot = new BulletSlot();
+        for (int i = 0; i < bulletCount; i++)
+        {
+            bulletSlot.GenerateBullet();
+        }
+
+        bulletSlotShower.Init(bulletSlot);
+    }
+    
+    public void RefillAll()
+    {
+        bulletSlot.Clear();
+        for (int i = 0; i < bulletCount; i++)
+        {
+            bulletSlot.GenerateBullet();
+        }
+        bulletSlotShower.RefillAll(bulletSlot);
     }
 
-    void OnEnable()
+    private void OnEnable()
     {
         playerInputReader.OnAttack += HandleAttack;
+        playerInputReader.OnTest += HandleTest;
     }
 
-    void OnDisable()
+    private void HandleTest()
+    {
+        RefillAll();
+    }
+
+    private void OnDisable()
     {
         playerInputReader.OnAttack -= HandleAttack;
+        playerInputReader.OnTest -= HandleTest;
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         if (!isCanvaMove) Movement();
         else CanvaMovement();
     }
 
-    void Movement()
+    private void Movement()
     {
-        float offset = Mathf.PingPong(Time.time * moveSpeed, moveDistance);
+        var offset = Mathf.PingPong(Time.time * moveSpeed, moveDistance);
 
-        if (moveHorizontally)
-        {
-            transform.position = new Vector3(startPos.x + offset, startPos.y, 0);
-        }
-        else
-        {
-            transform.position = new Vector3(startPos.x, startPos.y + offset, 0);
-        }
+        transform.position = moveHorizontally ? new Vector3(startPos.x + offset, startPos.y, 0) : new Vector3(startPos.x, startPos.y + offset, 0);
     }
     
-    private Vector2 initialPos = new Vector2(2.5f, 0);  
-    void CanvaMovement()
+    private Vector2 initialPos = new Vector2(2.5f, 0);
+
+    private void CanvaMovement()
     {
         var _moveDistance = 155;  
-        float offset = Mathf.PingPong(Time.time * moveSpeed, _moveDistance);
+        var offset = Mathf.PingPong(Time.time * moveSpeed, _moveDistance);
 
-        if (moveHorizontally)
-        {
-            rectTransform.anchoredPosition = new Vector3(initialPos.x + offset, initialPos.y, 0);
-        }
-        else
-        {
-            rectTransform.anchoredPosition = new Vector3(initialPos.x, initialPos.y + offset, 0);
-        }
+        rectTransform.anchoredPosition = moveHorizontally ? new Vector3(initialPos.x + offset, initialPos.y, 0) : new Vector3(initialPos.x, initialPos.y + offset, 0);
     }
     
     private void OnDrawGizmosSelected()
@@ -89,11 +104,29 @@ public class Line : MonoBehaviour
 
     private void HandleAttack(BulletType attackType)
     {
+        if (GetBullet().GetAttackType() != attackType)
+        {
+            ShotFail();
+            return;
+        };
+        
+        ShotSuccess();
+    }
+
+    private Bullet GetBullet()
+    {
+        return bulletSlot.GetBullet();
+        // else return bloodSlot.GetBullet();
+    }
+
+    private void ShotSuccess()
+    {
         if (isCanvaMove)
         {
-            Vector3 screenPos = rectTransform.position;
+            var screenPos = rectTransform.position;
+            if (Camera.main == null) return;
             screenPos.z = Mathf.Abs(Camera.main.transform.position.z);
-            Vector3 worldPos = Camera.main.ScreenToWorldPoint(screenPos);
+            var worldPos = Camera.main.ScreenToWorldPoint(screenPos);
             worldPos.z = 0f;
             playerDetector.DetectedAndHit(worldPos);
         }
@@ -101,54 +134,19 @@ public class Line : MonoBehaviour
         {
             playerDetector.DetectedAndHit();
         }
-    }
-}
 
-public enum BulletType
-{
-    A,
-    B
-}
-
-public class BulletSlot
-{
-    BulletFactory  bulletFactory;
-
-    public BulletSlot()
-    {
-        bulletFactory = new BulletFactory();
-    }
-    List<Bullet> bullets = new List<Bullet>();
-    public void GenerateBullet()
-    {
-        var bullet = bulletFactory.CreateRandomBullet();
-        bullets.Add(bullet);
-    }
-}
-
-public class BulletFactory
-{
-    public Bullet CreateBullet(BulletType attackType)
-    {
-        return new Bullet(attackType);
+        UseBullet();
     }
 
-    public Bullet CreateRandomBullet()
+    private void UseBullet()
     {
-        BulletType randomType = (BulletType)UnityEngine.Random.Range(0, Enum.GetValues(typeof(BulletType)).Length);
-        return CreateBullet(randomType);
+        bulletSlot.UseBullet();
+        bulletSlotShower.UpdateBullet();
     }
-}
 
-public class Bullet
-{
-    private BulletType attackType;
-    public Bullet(BulletType attackType)
+    private void ShotFail()
     {
-        this.attackType = attackType;
-    }
-    public BulletType GetAttackType()
-    {
-        return attackType;
+        UseBullet();
+        Debug.Log("Failed!");
     }
 }

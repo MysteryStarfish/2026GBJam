@@ -1,123 +1,140 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
+using System.Linq;
 using UnityEngine;
-using Vector2 = UnityEngine.Vector2;
-using Vector3 = UnityEngine.Vector3;
 
 public class Board : MonoBehaviour
 {
-    [SerializeField] private int row;
-    [SerializeField] private int col;
-    [SerializeField] private int cellSize;
-    
-    private Dictionary<Vector2Int, List<IOnBoardable>> posToEntity;
-    private Dictionary<IOnBoardable, Vector2Int> entityPositions;
+    [Header("棋盤幾何配置")]
+    [SerializeField] private float cellSize = 1f;
+    [SerializeField] private Vector3 worldOrigin = Vector3.zero;
 
-    public Vector3 CellToWorldPosition(Vector2 cellPosition) => new Vector3(cellPosition.x * cellSize - 4.5f, 4f - cellPosition.y * cellSize, 0);
-    
-    void SetEntityPositions(IOnBoardable entity, Vector2Int position) {
-        entityPositions[entity] = position;
-        if (!posToEntity.TryGetValue(position, out var list))
-        {
-            list = new List<IOnBoardable>();
-            posToEntity[position] = list;
-        }
-        posToEntity[position].Add(entity);
-    }
-    void ChangeEntityPositions(IOnBoardable entity, Vector2Int oldPosition, Vector2Int newPosition) {
-        if (posToEntity.TryGetValue(oldPosition, out var oldList))
-        {
-            oldList.Remove(entity);
-            if (oldList.Count == 0)
-            {
-                posToEntity.Remove(oldPosition);
-            }
-        }
-        SetEntityPositions(entity, newPosition);
-    }
-    
-    void Awake()
+    private readonly Dictionary<Vector2Int, HashSet<OnBoardEntity>> posToEntities = new();
+    private readonly Dictionary<OnBoardEntity, Vector2Int> entityOrigins = new();
+
+    #region 座標換算
+
+    public Vector3 CellToWorldPosition(Vector2Int cellPosition, Vector2Int size)
     {
-        posToEntity = new Dictionary<Vector2Int, List<IOnBoardable>>();
-        entityPositions =  new Dictionary<IOnBoardable, Vector2Int>();
+        float offsetX = size.x * 0.5f * cellSize;
+        float offsetY = (size.y - 1) * 0.5f * cellSize;
+
+        return worldOrigin + new Vector3(
+            cellPosition.x * cellSize + offsetX,
+            cellPosition.y * cellSize + offsetY,
+            0f
+        );
     }
 
-    public void InitEntityPosition(IOnBoardable entity, Vector2Int position)
+    public Vector2Int WorldToCellPosition(Vector3 worldPos)
     {
-        if (posToEntity.ContainsKey(position)) throw new Exception($"Position {position} is already occupied");
-        
-        SetEntityPositions(entity, position);
+        Vector3 diff = worldPos - worldOrigin;
+        return new Vector2Int(
+            Mathf.RoundToInt(diff.x / cellSize),
+            Mathf.RoundToInt(diff.y / cellSize)
+        );
     }
-    
-    public void InitEntityPosition(IOnBoardable entity, Vector2Int position, Vector2Int size)
+
+    #endregion
+
+    #region 實體管理 (放置 / 移除 / 查詢)
+
+    public bool CanFit(OnBoardEntity entity, Vector2Int targetOrigin)
     {
-        List<Vector2Int> occupiedPositions = new List<Vector2Int>(size.x * size.y);
-        for (int x = 0; x < size.x; x++)
+        foreach (var cell in entity.GetOccupiedCells(targetOrigin))
         {
-            for (int y = 0; y < size.y; y++)
+            if (posToEntities.TryGetValue(cell, out var occupants))
             {
-                Vector2Int pos = new Vector2Int(position.x + x, position.y + y);
-                
-                if (posToEntity.ContainsKey(pos))
+                if (occupants.Any(o => o.GetEntityType() != EntityType.Trigger))
                 {
-                    throw new Exception($"Position {pos} is already occupied");
+                    return false;
                 }
-                occupiedPositions.Add(pos);
             }
         }
-
-        entityPositions[entity] = position;
-        foreach (var pos in occupiedPositions)
-        {
-            if (!posToEntity.TryGetValue(pos, out var list))
-            {
-                list = new List<IOnBoardable>();
-                posToEntity[pos] = list;
-            }
-            posToEntity[pos].Add(entity);
-        }
+        return true;
     }
-    
-    public Vector2Int GetEntityPosition(IOnBoardable entity) => entityPositions.TryGetValue(entity, out Vector2Int pos) ? pos : throw new Exception($"Entity at position {entity} not found");
-    public void TryMove(IOnBoardable entity, Vector2Int targetPos)
+
+    public void PlaceEntity(OnBoardEntity entity, Vector2Int targetOrigin)
     {
-        if (!entityPositions.TryGetValue(entity, out Vector2Int currentPos)) return;
+        var targetCells = entity.GetOccupiedCells(targetOrigin).ToList();
 
-        if (posToEntity.TryGetValue(targetPos, out var targets) && targets.Count > 0)
+        entityOrigins[entity] = targetOrigin;
+        foreach (var cell in targetCells)
         {
-            var targetsCopy = new List<IOnBoardable>(targets);
-            foreach (var target in targetsCopy)
+            if (!posToEntities.TryGetValue(cell, out var set))
             {
-                target.OnOverlapWith(currentPos, targetPos, entity);
-                entity.OnOverlapWith(currentPos, targetPos, target);
+                set = new HashSet<OnBoardEntity>();
+                posToEntities[cell] = set;
+            }
+            set.Add(entity);
+        }
+    }
+
+    public void RemoveEntity(OnBoardEntity entity)
+    {
+        if (!entityOrigins.TryGetValue(entity, out var origin)) return;
+
+        foreach (var cell in entity.GetOccupiedCells(origin))
+        {
+            if (posToEntities.TryGetValue(cell, out var set))
+            {
+                set.Remove(entity);
+                if (set.Count == 0) posToEntities.Remove(cell);
             }
         }
-        else
-        {
-            ChangeEntityPositions(entity, currentPos, targetPos);
-        }
+        entityOrigins.Remove(entity);
     }
 
-    public void ForceMove(IOnBoardable entity, Vector2Int targetPos)
+    public Vector2Int GetEntityPosition(OnBoardEntity entity)
     {
-        if (!entityPositions.TryGetValue(entity, out Vector2Int currentPos)) return;
-
-        ChangeEntityPositions(entity, currentPos, targetPos);
+        return entityOrigins.TryGetValue(entity, out var pos) ? pos : throw new Exception("Entity not registered on board!");
     }
-    
-    public void RemoveEntity(IOnBoardable entity)
+
+    #endregion
+
+    #region 移動與碰撞判定
+
+    public bool TryMove(OnBoardEntity entity, Vector2Int targetOrigin)
     {
-        if (entityPositions.TryGetValue(entity, out Vector2Int pos))
+        if (!entityOrigins.TryGetValue(entity, out var currentOrigin)) return false;
+
+        var currentCells = new HashSet<Vector2Int>(entity.GetOccupiedCells(currentOrigin));
+        var targetCells = entity.GetOccupiedCells(targetOrigin).ToList();
+
+        var solidBlockers = new HashSet<OnBoardEntity>();
+        var triggers = new HashSet<OnBoardEntity>();
+
+        foreach (var cell in targetCells)
         {
-            if (posToEntity.TryGetValue(pos, out var list))
+            // 排除自身原本佔有的格子（防止大怪往旁邊移時自撞卡死）
+            if (currentCells.Contains(cell)) continue;
+
+            if (posToEntities.TryGetValue(cell, out var occupants))
             {
-                list.Remove(entity);
-                if (list.Count == 0) posToEntity.Remove(pos);
+                foreach (var occ in occupants)
+                {
+                    if (occ == entity) continue;
+
+                    triggers.Add(occ);
+                }
             }
-            entityPositions.Remove(entity);
         }
+
+        bool canMove = true;
+        foreach (var trig in triggers)
+        {
+            trig.OnOverlapWith(targetOrigin, targetOrigin, entity);
+            canMove = entity.OnOverlapWith(currentOrigin, targetOrigin, trig);
+        }
+        
+        if (!canMove) return false;
+        // 成功移動：更新格子資訊
+        RemoveEntity(entity);
+        PlaceEntity(entity, targetOrigin);
+        return true;
     }
+
+    #endregion
 }
 
 public enum EntityType
@@ -125,12 +142,5 @@ public enum EntityType
     Obstacle,
     Player,
     Enemy,
-}
-
-public interface IOnBoardable
-{
-    GameObject gameObject { get; }
-    EntityType GetEntityType();
-    
-    void OnOverlapWith(Vector2Int originPos, Vector2Int targetPos, IOnBoardable other);
+    Trigger
 }
