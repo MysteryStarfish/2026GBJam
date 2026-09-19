@@ -24,3 +24,4 @@ MonoBehaviour:
     Hp: 1
     Atk: 1
     CurrentMoveGrids: 0
+    type: 1

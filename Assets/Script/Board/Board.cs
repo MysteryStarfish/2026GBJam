@@ -5,13 +5,19 @@ using UnityEngine;
 
 public class Board : MonoBehaviour
 {
-    [Header("棋盤幾何配置")]
     [SerializeField] private float cellSize = 1f;
     [SerializeField] private Vector3 worldOrigin = Vector3.zero;
 
     private readonly Dictionary<Vector2Int, HashSet<OnBoardEntity>> posToEntities = new();
     private readonly Dictionary<OnBoardEntity, Vector2Int> entityOrigins = new();
+    
+    public OnBoardEntity Player { get; private set; }
 
+    public void RegisterPlayer(OnBoardEntity player)
+    {
+        Player = player;
+    }
+    
     #region 座標換算
 
     public Vector3 CellToWorldPosition(Vector2Int cellPosition, Vector2Int size)
@@ -29,9 +35,10 @@ public class Board : MonoBehaviour
     public Vector2Int WorldToCellPosition(Vector3 worldPos)
     {
         Vector3 diff = worldPos - worldOrigin;
+        
         return new Vector2Int(
-            Mathf.RoundToInt(diff.x / cellSize),
-            Mathf.RoundToInt(diff.y / cellSize)
+            Mathf.FloorToInt((diff.x / cellSize) + 0.001f),
+            Mathf.FloorToInt((diff.y / cellSize) + 0.001f)
         );
     }
 
@@ -67,6 +74,11 @@ public class Board : MonoBehaviour
                 posToEntities[cell] = set;
             }
             set.Add(entity);
+        }
+
+        if (entity.GetEntityType() == EntityType.Player)
+        {
+            RegisterPlayer(entity);
         }
     }
 

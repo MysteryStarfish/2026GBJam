@@ -16,7 +16,7 @@ MonoBehaviour:
   moveInfo:
     initPosition: {x: 2, y: 2}
     size: {x: 1, y: 1}
-    direction: {x: 1, y: 0}
+    direction: {x: 1, y: 1}
     firstMoveDistance: 0
     moveDistance: 10
     stepInterval: 0.7
@@ -24,3 +24,4 @@ MonoBehaviour:
     Hp: 1
     Atk: 1
     CurrentMoveGrids: 0
+    type: 2

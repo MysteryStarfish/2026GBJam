@@ -88,6 +88,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1526372644779315367}
   - component: {fileID: 5609691647488192445}
+  - component: {fileID: 1253604705089434022}
   m_Layer: 7
   m_Name: Triangle
   m_TagString: Untagged
@@ -160,7 +161,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 75f5f34dc1b5347e0b8351032682f224, type: 3}
-  m_Color: {r: 1, g: 0, b: 0.115291715, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -170,6 +171,28 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!95 &1253604705089434022
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6699361062955601134}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 04e9a7c64baaef14f87e02f28ceb1827, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &9063062276087840634
 GameObject:
   m_ObjectHideFlags: 0
@@ -217,11 +240,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Script.Enemy.Enemy
   board: {fileID: 0}
-  moveGrids: 6
-  initPosition: {x: 1, y: 1}
-  direction: {x: 0, y: 1}
-  stepInterval: 0.5
+  moveInfo:
+    initPosition: {x: 0, y: 0}
+    size: {x: 0, y: 0}
+    direction: {x: 0, y: 0}
+    firstMoveDistance: 0
+    moveDistance: 0
+    stepInterval: 0
   state:
     Hp: 1
     Atk: 1
     CurrentMoveGrids: 0
+    type: 0
+  spriteRenderer: {fileID: 5609691647488192445}
+  animator: {fileID: 1253604705089434022}
+  monster:
+  - {fileID: 7400000, guid: fd40af5f15cbb364e9c19a1ab24cecc7, type: 2}
+  - {fileID: 7400000, guid: 7bc63817312a71943a7e0ce6cb6bb9ce, type: 2}
+  - {fileID: 7400000, guid: 8fcfd927780cf1b4682f8bfdcb9059e8, type: 2}
