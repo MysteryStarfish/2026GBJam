@@ -13,9 +13,9 @@ TagManager:
   - UI
   - Player
   - Enemy
+  - Line
   - 
-  - 
-  - 
+  - Mask
   - 
   - 
   - 
@@ -49,6 +49,9 @@ TagManager:
     locked: 0
   - name: Laser
     uniqueID: 454547033
+    locked: 0
+  - name: Mask
+    uniqueID: 2572417533
     locked: 0
   m_RenderingLayers:
   - Default

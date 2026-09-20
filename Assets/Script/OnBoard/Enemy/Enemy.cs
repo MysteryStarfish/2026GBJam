@@ -11,6 +11,7 @@ namespace Script.Enemy
         [SerializeField] private Board board;
         private int moveGrids => moveInfo.moveDistance;
         private bool isFirstMove = true;
+        private bool canMove = false;
         [SerializeField] private MoveInfo moveInfo;
         [SerializeField] private EnemyState state;
         [SerializeField] private SpriteRenderer spriteRenderer;
@@ -18,6 +19,8 @@ namespace Script.Enemy
 
         [SerializeField] private Animator animator;
         [SerializeField] private AnimationClip[] monster;
+        [SerializeField] private AnimationClip monsterCharge;
+        [SerializeField] private AnimationClip monsterDash;
         private AnimationClip animation;
         private Tween moveTween;
         public event Action EnemyDeadEvent;
@@ -154,6 +157,53 @@ namespace Script.Enemy
         {
             enemyMovement.ChangeDirection();
         }
+
+        public void PlayDash()
+        {
+            animator.Play(monsterDash.name);
+        }
+
+        public void PlayCharge()
+        {
+            animator.Play(monsterCharge.name);
+        }
+
+        public void PlayMove()
+        {
+            animator.Play(animation.name);
+        }
+
+        public void Stop()
+        {
+            // 確保物件本身與 Animator 都沒有被摧毀
+            if (this == null || animator == null) return;
+
+            canMove = false;
+            moveTween?.Kill();
+            animator.speed = 0f;
+        }
+        public void CanMove()
+        {
+            // 嚴格檢查：只要物件本身是 null、Animator 被拔除、或是已經宣告死亡，就立刻中斷
+            if (this == null || gameObject == null || animator == null || isDead) return;
+
+            canMove = true;
+            moveTween?.Kill(); 
+            moveTween = DOVirtual.DelayedCall(moveInfo.stepInterval, Move)
+                .SetLoops(-1, LoopType.Restart);
+            animator.speed = 1f;
+        }
+
+        public void Clear()
+        {
+            if (this == null || gameObject == null) return;
+
+            if (isDead) return;
+            moveTween?.Kill();
+
+            board.RemoveEntity(this);
+            Destroy(gameObject);
+        }
     }
 
     public interface IEnemyMovement
@@ -255,13 +305,14 @@ namespace Script.Enemy
 
                     _stunTween?.Kill();
 
-                    _enemy.Sprite.DOColor(Color.red, 0.5f).SetEase(Ease.Linear);
+                    ChargeTransform();
                     // 加入 SetLink，如果 _enemy 的 GameObject 被銷毀，Tween 會自動中斷
                     _stunTween = DOVirtual.DelayedCall(0.5f, () =>
                     {
                         if (_enemy != null)
                         {
                             _enemy.SetMoveSpeedMultiplier(2.0f); // 恢復並加速準備衝刺
+                            DashTransform();
                         }
                     }).SetLink(_enemy.gameObject);
 
@@ -295,6 +346,13 @@ namespace Script.Enemy
             }
         }
 
+        private void ChargeTransform()
+        {
+            
+            // _enemy.Sprite.DOColor(Color.red, 0.5f).SetEase(Ease.Linear);
+            _enemy.PlayCharge();
+        }
+
         public override void ChangeDirection()
         {
             if (_isDashing)
@@ -305,7 +363,8 @@ namespace Script.Enemy
                 // 確保先殺死之前的計時器，避免多次觸發疊加
                 _stunTween?.Kill();
                 
-                _enemy.Sprite.DOColor(Color.white, 1.0f).SetEase(Ease.Linear);
+                DashFinishedTransform();
+                
                 _stunTween = DOVirtual.DelayedCall(1.0f, () =>
                 {
                     if (_enemy != null)
@@ -319,6 +378,17 @@ namespace Script.Enemy
             {
                 base.ChangeDirection();
             }
+        }
+
+        private void DashFinishedTransform()
+        {
+            // _enemy.Sprite.DOColor(Color.white, 1.0f).SetEase(Ease.Linear);
+            _enemy.PlayMove();
+        }
+
+        private void DashTransform()
+        {
+            _enemy.PlayDash();
         }
     }
 }

@@ -258,3 +258,7 @@ MonoBehaviour:
   - {fileID: 7400000, guid: fd40af5f15cbb364e9c19a1ab24cecc7, type: 2}
   - {fileID: 7400000, guid: 7bc63817312a71943a7e0ce6cb6bb9ce, type: 2}
   - {fileID: 7400000, guid: 8fcfd927780cf1b4682f8bfdcb9059e8, type: 2}
+  - {fileID: 7400000, guid: 4d465594cf8b777469d76c68046ef7d1, type: 2}
+  - {fileID: 7400000, guid: 74d01d49ea3c3d94f98162edaa353ac4, type: 2}
+  monsterCharge: {fileID: 7400000, guid: 60888e2d892dd58408fcfaf110ed8415, type: 2}
+  monsterDash: {fileID: 7400000, guid: f4991119787804c4fae791568278bddf, type: 2}

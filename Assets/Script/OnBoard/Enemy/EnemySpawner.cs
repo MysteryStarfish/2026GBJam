@@ -30,6 +30,40 @@ namespace Script.Enemy
             public EnemyData EnemyData;
         }
 
+        public void StopEnemy()
+        {
+            // 反向迴圈，安全移除變成 null 的敵人
+            for (int i = enemies.Count - 1; i >= 0; i--)
+            {
+                var enemy = enemies[i];
+                if (enemy == null)
+                {
+                    enemies.RemoveAt(i);
+                    continue;
+                }
+        
+                enemy.Stop();
+            }
+        }
+        
+        public void MoveEnemy()
+        {
+            // 必須從後面往前掃描，這樣 RemoveAt 才不會導致索引錯亂
+            for (int i = enemies.Count - 1; i >= 0; i--)
+            {
+                var enemy = enemies[i];
+        
+                // 嚴格過濾：只要 enemy 遺失，或是其 gameObject 已經被標記為摧毀，就移除
+                if (enemy == null || enemy.gameObject == null)
+                {
+                    enemies.RemoveAt(i);
+                    continue;
+                }
+        
+                enemy.CanMove();
+            }
+        }
+
         public void SpawnEnemy()
         {
             foreach (var enemyInfo in enemySpawnInfo)
@@ -44,7 +78,7 @@ namespace Script.Enemy
         void OnEnemyDied()
         {
             EnemyRemain--;
-            if (EnemyRemain == 0)
+            if (EnemyRemain <= 0)
             {
                 AllEnemiesDead();
             }
@@ -59,8 +93,10 @@ namespace Script.Enemy
         {
             foreach (var enemy in enemies)
             {
-                enemy.Dead();
+                enemy.Clear();
             }
+            enemies.Clear();
+            EnemyRemain = 0;
         }
     }
 }

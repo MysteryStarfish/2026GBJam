@@ -1,13 +1,13 @@
 fileFormatVersion: 2
-guid: 4393c0a6ca5757e46ab88ecfa30c2c9c
+guid: 2ae7e3dcdce5c554294d241c3f19fcd7
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3138535214636824063
-    second: monster_1_0
+      213: 5538988901445440948
+    second: monster_1 1_0
   - first:
-      213: -6593163209844717498
-    second: monster_1_1
+      213: 7806175072274448727
+    second: monster_1 1_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -118,10 +118,10 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 10a8488d9dea174d0800000000000000
-      internalID: -3138535214636824063
+      spriteID: bd38edf59a391484ea32fb449280be11
+      internalID: 813805561
       vertices: []
       indices: 
       edges: []
@@ -140,10 +140,10 @@ TextureImporter:
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 64808032ef06084a0800000000000000
-      internalID: -6593163209844717498
+      spriteID: dea46d5318278bd4b9f6672780717bef
+      internalID: -1995344929
       vertices: []
       indices: 
       edges: []
@@ -152,7 +152,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 26fc81ed48e06e74286300b14abb94e1
+    spriteID: 6b31754585f0e564886998f66e8412a1
     internalID: 0
     vertices: []
     indices: 
@@ -164,8 +164,8 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":2.0,"y":1.0},"gridSpriteSize":{"x":16.0,"y":15.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      monster_1_0: -3138535214636824063
-      monster_1_1: -6593163209844717498
+      monster_1_0: 813805561
+      monster_1_1: -1995344929
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

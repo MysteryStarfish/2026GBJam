@@ -6,9 +6,16 @@ namespace Script.OnBoard.ObstacleFolder
     public class Trigger : OnBoardEntity
     {
         public event Action TriggerEvent;
+        [SerializeField] private Board board;
         [SerializeField] private Vector2Int size = Vector2Int.one;
+        [SerializeField] private GameObject Level;
         public override Vector2Int Size => size;
         private bool _isUsed = false;
+
+        public void Start()
+        {
+            Init(board);
+        }
 
         public void Init(Board board)
         {
@@ -26,6 +33,7 @@ namespace Script.OnBoard.ObstacleFolder
         {
             if (_isUsed) return true;
             if (other.GetEntityType() != EntityType.Player) return true;
+            Level.SetActive(true);
             TriggerEvent?.Invoke();
             _isUsed = true;
 

@@ -147,6 +147,46 @@ public class Board : MonoBehaviour
     }
 
     #endregion
+    
+    /// <summary>
+    /// 取得目前棋盤上所有未被非 Trigger 實體佔據的座標
+    /// </summary>
+    public List<Vector2Int> GetEmptyCells(Vector3 originWorldPos, Vector2Int boardSize)
+    {
+        var cellPosition = WorldToCellPosition(originWorldPos);
+        List<Vector2Int> emptyCells = new List<Vector2Int>();
+
+        for (int x = cellPosition.x; x < cellPosition.x + boardSize.x; x++)
+        {
+            for (int y = cellPosition.y; y < cellPosition.y + boardSize.y; y++)
+            {
+                Vector2Int pos = new Vector2Int(x, y);
+                // 檢查該格是否有非 Trigger 的實體擋住
+                if (!posToEntities.TryGetValue(pos, out var occupants) ||
+                    !(occupants.Any(o => (o.GetEntityType() == EntityType.Player || o.GetEntityType() == EntityType.Energy))))
+                {
+                    emptyCells.Add(pos);
+                }
+            }
+        }
+        return emptyCells;
+    }
+
+    /// <summary>
+    /// 隨機取得一格空位，若無空位回傳 false
+    /// </summary>
+    public bool TryGetRandomEmptyCell(Vector3 originWorldPos, Vector2Int boardSize, out Vector2Int randomCell)
+    {
+        var empties = GetEmptyCells(originWorldPos, boardSize);
+        if (empties.Count == 0)
+        {
+            randomCell = Vector2Int.zero;
+            return false;
+        }
+
+        randomCell = empties[UnityEngine.Random.Range(0, empties.Count)];
+        return true;
+    }
 }
 
 public enum EntityType
@@ -154,5 +194,6 @@ public enum EntityType
     Obstacle,
     Player,
     Enemy,
-    Trigger
+    Trigger,
+    Energy
 }

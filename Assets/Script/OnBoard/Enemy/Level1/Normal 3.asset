@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f1a3154ac564b14b261e918f759e623, type: 3}
+  m_Name: Normal 3
+  m_EditorClassIdentifier: Assembly-CSharp::Script.Enemy.EnemyData
+  EnemyPrefab: {fileID: 7882549646994070874, guid: 702ded922c99b87459dea0cc7aa42c8f, type: 3}
+  moveInfo:
+    initPosition: {x: 1, y: 1}
+    size: {x: 2, y: 2}
+    direction: {x: 1, y: 0}
+    firstMoveDistance: 0
+    moveDistance: 10
+    stepInterval: 0.3
+  enemyState:
+    Hp: 1
+    Atk: 1
+    CurrentMoveGrids: 0
+    type: 3

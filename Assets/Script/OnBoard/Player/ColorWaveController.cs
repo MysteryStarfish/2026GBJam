@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class TimeStopEffectController : MonoBehaviour
 {
@@ -6,10 +7,14 @@ public class TimeStopEffectController : MonoBehaviour
     public Material fullScreenMaterial;
     
     [Header("特效擴散速度")]
-    public float expandSpeed = 2.0f; 
+    public float expandSpeed = 2.0f;
+
+    public event Action StopFullScreenEvent;
+    public event Action StopClearScreenEvent;
 
     private float currentProgress = 0f;
     private bool isExpanding = false;
+    private bool isUnexpanding;
 
     void Start()
     {
@@ -22,13 +27,6 @@ public class TimeStopEffectController : MonoBehaviour
 
     void Update()
     {
-        // 按下左鍵觸發時停擴散
-        if (Input.GetMouseButtonDown(0))
-        {
-            currentProgress = 0f;
-            isExpanding = true;
-        }
-
         // 動態推動 _Progress 數值
         if (isExpanding && fullScreenMaterial != null)
         {
@@ -37,7 +35,22 @@ public class TimeStopEffectController : MonoBehaviour
             if (currentProgress > 1.5f) // 設大於 1 確保能完全覆蓋矩形螢幕的角落
             {
                 currentProgress = 1.5f;
-                isExpanding = false; 
+                isExpanding = false;
+                StopFullScreenEvent?.Invoke();
+            }
+
+            fullScreenMaterial.SetFloat("_Progress", currentProgress);
+        }
+        
+        if (isUnexpanding && fullScreenMaterial != null)
+        {
+            currentProgress -= Time.deltaTime * expandSpeed;
+            
+            if (currentProgress < 0f) // 設大於 1 確保能完全覆蓋矩形螢幕的角落
+            {
+                currentProgress = 0f;
+                isUnexpanding = false; 
+                StopClearScreenEvent?.Invoke();
             }
 
             fullScreenMaterial.SetFloat("_Progress", currentProgress);
@@ -51,5 +64,17 @@ public class TimeStopEffectController : MonoBehaviour
         {
             fullScreenMaterial.SetFloat("_Progress", 0f);
         }
+    }
+    
+    public void PlayTimeStopEffect()
+    {
+        isUnexpanding = false;
+        isExpanding = true;
+    }
+    
+    public void PlayTimeMoveEffect()
+    {
+        isUnexpanding = true;
+        isExpanding = false;
     }
 }
